@@ -1,5 +1,7 @@
 # Google Search Console API Skill
 
+![bearatol/google-search-console-api banner](assets/readme-banner.png)
+
 An autonomous AI-agent skill for retrieving Google Search Console data, diagnosing organic search performance, and turning the findings into concrete website improvements.
 
 [![skills.sh](https://skills.sh/b/bearatol/google-search-console-api)](https://skills.sh/bearatol/google-search-console-api)
