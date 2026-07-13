@@ -1,14 +1,19 @@
-name: Tests
+name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   test:
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -24,8 +29,35 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Run unit tests
+      - name: Run unit and package tests
         run: python -B -m unittest discover -s tests -v
 
       - name: Check command-line interface
         run: python -B scripts/gsc.py --help
+
+  install-smoke-test:
+    name: Skills CLI installation
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install skill in an isolated project
+        env:
+          DISABLE_TELEMETRY: "1"
+        run: |
+          target="$(mktemp -d)"
+          cd "$target"
+          npx --yes skills@1.5.16 add "$GITHUB_WORKSPACE" \
+            --skill google-search-console-api \
+            --agent codex \
+            --copy \
+            --yes
+          test -f ".agents/skills/google-search-console-api/SKILL.md"

@@ -2,6 +2,8 @@
 
 An autonomous AI-agent skill for retrieving Google Search Console data, diagnosing organic search performance, and turning the findings into concrete website improvements.
 
+[![skills.sh](https://skills.sh/b/bearatol/google-search-console-api)](https://skills.sh/bearatol/google-search-console-api)
+
 ## Ask for an outcome
 
 After installation, the user does not need to name the skill, operate a CLI, or understand the Search Console API. They can make a normal request such as:
@@ -87,6 +89,30 @@ python3 -B -m unittest discover -s tests -v
 ```
 
 GitHub Actions runs the test suite on supported Python versions.
+
+## Releasing
+
+The repository is the source of truth for skills.sh. Skills are installed directly from the default GitHub branch; skills.sh does not provide a separate version-upload endpoint.
+
+Create a semantic version tag to publish a GitHub Release:
+
+```bash
+git switch main
+git pull --ff-only
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The release workflow validates the tag, confirms that its commit is on `main`, runs the complete reusable CI workflow, verifies installation through Skills CLI, and creates a GitHub Release with generated notes. If any check fails, no release is created.
+
+Users install or update the current skill through the GitHub source:
+
+```bash
+npx skills add bearatol/google-search-console-api
+npx skills update google-search-console-api -y
+```
+
+If a release is faulty, keep its tag immutable, fix `main`, and publish a new patch release. Mark the faulty release as superseded in its notes when useful. Do not move, delete, or reuse a published version tag.
 
 ## License
 
