@@ -1,24 +1,37 @@
 # Google Search Console API Skill
 
-An AI-agent skill for setting up Google Search Console API access and analyzing real search performance data.
+An autonomous AI-agent skill for retrieving Google Search Console data, diagnosing organic search performance, and turning the findings into concrete website improvements.
 
-## AI-first usage
+## Ask for an outcome
 
-Install the skill, then ask your AI agent:
+After installation, the user does not need to name the skill, operate a CLI, or understand the Search Console API. They can make a normal request such as:
 
 ```text
-Use $google-search-console-api to set up Search Console access and analyze my website.
+Show me my site's Google search statistics and explain what I should improve.
 ```
 
-The agent will:
+```text
+Find out why my organic traffic dropped and fix what you can in the website.
+```
 
-1. Check whether Google OAuth credentials and a token are already configured.
-2. Open the relevant Google Cloud pages when browser control is available, or give one precise instruction at a time.
-3. Validate and securely import the downloaded Desktop app credentials file.
-4. Start the OAuth flow in the system browser.
-5. Verify access, list available Search Console properties, and continue with the requested analysis.
+```text
+Find pages that are close to the first page of Google and turn them into growth opportunities.
+```
 
-Google requires the account owner to complete sign-in, choose or create the Cloud project, and approve the consent screen. The agent handles the surrounding setup and clearly pauses only for these required user actions.
+The agent invokes the skill automatically and operates its internal tools itself.
+
+## What the agent does
+
+1. Checks whether Search Console access is ready.
+2. Leads the one-time Google Cloud and OAuth setup when needed.
+3. Discovers the relevant Search Console property and matches it to the current website.
+4. Retrieves current and previous-period data by query, page, date, and device.
+5. Identifies losses, low-CTR opportunities, near-page-one rankings, index issues, and competing pages.
+6. Connects the findings to specific website pages and source files.
+7. Recommends improvements or, when the user asks for implementation, follows the website project's approval rules and makes the approved changes.
+8. Reports evidence, actions taken, validation results, and remaining opportunities.
+
+The agent does not ask the user to run Python commands. It asks for help only when Google requires the account owner to sign in or approve consent, when multiple properties remain genuinely ambiguous, or when the website project requires approval before file changes.
 
 ## Installation
 
@@ -28,65 +41,46 @@ npx skills add bearatol/google-search-console-api
 
 Skills installed from the public GitHub repository can be discovered automatically by [skills.sh](https://skills.sh/).
 
-## What it can do
+## Capabilities
 
-- Guide Google Cloud and OAuth 2.0 setup for a Desktop app.
-- List accessible Search Console properties.
-- Summarize clicks, impressions, CTR, and average position.
-- Report by query, page, date, device, and other dimensions.
-- Inspect a URL's Google index status.
-- List sitemaps and submit one after explicit confirmation.
-- Cache results locally without third-party Python dependencies.
+- Agent-led Google Cloud and OAuth 2.0 setup for a Desktop app.
+- Search Console property discovery.
+- Clicks, impressions, CTR, and average-position analysis.
+- Query, page, date, device, and combined-dimension reports.
+- Period-over-period diagnostics.
+- URL Inspection for priority pages.
+- Sitemap listing and guarded submission.
+- Local caching without third-party Python dependencies.
+- Evidence-backed SEO recommendations and implementation handoff.
 
-## Agent-led setup command
+## Authorization boundary
 
-Check the current setup:
+Google requires the account owner to complete sign-in and approve the OAuth consent screen. The agent handles the surrounding setup, opens the relevant pages when browser control is available, and pauses only for the required confirmation.
 
-```bash
-python3 scripts/gsc.py setup
-```
+Credentials and tokens remain local, are excluded from Git, and are never printed in responses.
 
-After downloading the Desktop app OAuth JSON, the agent can securely import it and immediately start authorization:
+## Internal agent tooling
 
-```bash
-python3 scripts/gsc.py setup \
-  --client-file /path/to/downloaded-client.json \
-  --authorize
-```
-
-The imported credentials and token are stored with `0600` permissions. The original downloaded file is not deleted automatically.
-
-See [references/SETUP.md](references/SETUP.md) for the complete agent playbook and manual fallback.
-
-## Examples
-
-```bash
-python3 scripts/gsc.py sites
-python3 scripts/gsc.py summary --site example.com
-python3 scripts/gsc.py performance --site example.com --dimensions query
-python3 scripts/gsc.py performance --site example.com --dimensions page
-python3 scripts/gsc.py inspect --site example.com --url https://example.com/page
-```
-
-Show all commands:
+The bundled dependency-free CLI is an implementation detail used by the agent. It supports setup, authorization, property discovery, performance reports, sitemaps, and URL Inspection:
 
 ```bash
 python3 scripts/gsc.py --help
 ```
 
-Python 3.10 or newer is required. The CLI uses only the Python standard library.
+See [references/SETUP.md](references/SETUP.md) for authorization handling and [references/ANALYSIS.md](references/ANALYSIS.md) for the analysis and improvement methodology.
+
+Python 3.10 or newer is required.
 
 ## Safety
 
 - Read-only Search Console access is requested by default.
 - `config/client_secret.json`, `config/token.json`, and `cache/` are excluded from Git.
-- Credentials and tokens are never printed to the terminal.
-- Sitemap submission requires write access and an explicit `--confirm` flag.
+- Credentials and tokens are stored with `0600` permissions.
+- Sitemap submission requires write access and an explicit confirmation flag.
 - URL Inspection checks index status; it cannot request indexing for ordinary pages.
+- Website files are changed only when the user requested implementation and the active project rules allow it.
 
 ## Development
-
-Run the tests:
 
 ```bash
 python3 -B -m unittest discover -s tests -v

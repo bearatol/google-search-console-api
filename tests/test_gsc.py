@@ -120,7 +120,7 @@ class GSCTest(unittest.TestCase):
         payload = {
             "rows": [
                 {
-                    "keys": ["seo запрос"],
+                    "keys": ["seo query"],
                     "clicks": 3,
                     "impressions": 25,
                     "ctr": 0.12,
@@ -134,7 +134,7 @@ class GSCTest(unittest.TestCase):
             content = path.read_text(encoding="utf-8")
         self.assertEqual(count, 1)
         self.assertIn("query\tclicks\timpressions\tctr\tposition", content)
-        self.assertIn("seo запрос\t3\t25\t0.120000\t8.500", content)
+        self.assertIn("seo query\t3\t25\t0.120000\t8.500", content)
 
     @mock.patch.object(gsc, "request_json")
     @mock.patch.object(gsc, "save_secret_json")

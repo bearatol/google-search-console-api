@@ -1,82 +1,72 @@
 ---
 name: google-search-console-api
 description: >-
-  Set up and use Google Search Console API with agent-led Google Cloud OAuth
-  guidance, secure credential import, property discovery, Search Analytics,
-  clicks, impressions, CTR, average position, sitemaps, and URL Inspection.
-  Use when the user mentions Google Search Console API, GSC API, Google search
-  queries or pages, index status, real Google SEO data, or needs help creating
-  and authorizing Search Console OAuth credentials.
+  Autonomously retrieve and analyze Google Search Console data, diagnose
+  organic search performance, and turn findings into website improvements.
+  Use for natural-language requests in any language about a site's Google
+  statistics, search traffic, clicks, impressions, CTR, rankings, indexing,
+  traffic drops, SEO opportunities, or improving a website using real Google
+  data. Also use for Search Console API setup, OAuth, properties, sitemaps, and
+  URL Inspection. The user does not need to mention Search Console, GSC, an
+  API, this skill, or any command explicitly.
 ---
 
 # Google Search Console API
 
-Use `scripts/gsc.py` to set up access and work with Search Console. Use only the Python standard library. Keep OAuth files local to the skill and never expose credentials or tokens.
+Treat the user's message as an outcome request. Operate `scripts/gsc.py` and all other internal tools yourself. Never ask the user to run a command, invoke the skill, inspect a file, calculate dates, or choose a report that the agent can handle.
 
-## Agent-led setup
+Resolve bundled paths relative to this `SKILL.md` and run the CLI from the skill directory. Keep the website workspace as the source of project context and implementation files; do not assume it contains this skill's `scripts/` directory.
 
-Own the setup process. Do not begin by sending the user a generic Google Cloud checklist.
+Do not mention the internal CLI unless the user asks for technical details or a narrowly scoped diagnostic requires it.
 
-1. Read [references/SETUP.md](references/SETUP.md).
-2. Run:
+## Autonomous workflow
+
+1. Inspect the current workspace for the website domain and relevant project instructions.
+2. Run the setup check yourself:
    ```bash
    python3 scripts/gsc.py setup
    ```
-3. If credentials are missing, use available browser tools to open the exact Google Cloud page and guide the user through the visible interface. If browser control is unavailable, give one precise action at a time.
-4. Pause only for actions Google requires the account owner to perform: sign-in, project choice when business context is unknown, consent configuration decisions, and OAuth approval.
-5. Ask for the downloaded JSON file path or attachment. Never ask the user to paste its contents.
-6. If the file is outside the allowed project boundary, request permission before accessing it.
-7. Import and authorize:
-   ```bash
-   python3 scripts/gsc.py setup --client-file /path/to/client.json --authorize
-   ```
-8. Verify access:
-   ```bash
-   python3 scripts/gsc.py token-info
-   python3 scripts/gsc.py sites
-   ```
+3. If authorization is incomplete, follow [references/SETUP.md](references/SETUP.md). Take every permitted action yourself and pause only for Google sign-in, consent, an unknown business choice, or required access to a file outside the project boundary.
+4. List Search Console properties yourself.
+5. Match the property to the current website domain. Prefer an exact domain property, then an exact URL-prefix property. Ask the user only if multiple plausible properties remain after inspecting the workspace and request.
+6. Follow [references/ANALYSIS.md](references/ANALYSIS.md) to select dates, retrieve reports, compare periods, diagnose causes, and prioritize opportunities.
+7. Return the requested outcome, not a transcript of commands.
 
-Default to `webmasters.readonly`. Request write scope only when the user explicitly asks to submit a sitemap.
+## When the user asks to improve the site
 
-## Required analysis order
+Use Search Console evidence to identify specific pages and changes. Then inspect the website source in the active workspace.
 
-1. List properties:
-   ```bash
-   python3 scripts/gsc.py sites
-   ```
-2. If the target is ambiguous, ask the user to choose a property.
-3. Get the overview:
-   ```bash
-   python3 scripts/gsc.py summary --site example.com
-   ```
-4. Run only the detailed reports needed for the request.
+- Obey the website repository's instructions and approval gates.
+- If the project requires a plan before edits, gather data first, present an evidence-backed plan, and wait for approval.
+- After approval, make the approved changes yourself, run appropriate validation, and report what changed.
+- If the website source is unavailable, provide a prioritized implementation brief with exact URLs, evidence, proposed changes, and success metrics.
+- Do not interpret a broad request to improve the site as permission to submit a sitemap, change Search Console settings, or perform unrelated edits.
 
-## Commands
+## Internal command reference
+
+Run these commands yourself as needed:
 
 ```bash
-# Setup, OAuth, and token status
+# Setup and authorization
 python3 scripts/gsc.py setup [--client-file PATH] [--authorize]
 python3 scripts/gsc.py auth [--scope readonly|write] [--no-browser]
 python3 scripts/gsc.py token-info
 
-# Search Console properties
+# Property discovery and overview
 python3 scripts/gsc.py sites [--no-cache]
-
-# Last 90 completed days by default
 python3 scripts/gsc.py summary --site example.com [--date-from YYYY-MM-DD] [--date-to YYYY-MM-DD]
 
 # Search Analytics
 python3 scripts/gsc.py performance --site example.com --dimensions query
 python3 scripts/gsc.py performance --site example.com --dimensions page
 python3 scripts/gsc.py performance --site example.com --dimensions date,query --limit 1000
+python3 scripts/gsc.py performance --site example.com --dimensions query,page --limit 25000
 python3 scripts/gsc.py performance --site example.com --filter device:equals:MOBILE
 
-# Sitemaps
+# Sitemaps and index status
 python3 scripts/gsc.py sitemaps --site example.com --action list
 python3 scripts/gsc.py sitemaps --site example.com --action submit \
   --sitemap-url https://example.com/sitemap.xml --confirm
-
-# Google index status
 python3 scripts/gsc.py inspect --site example.com --url https://example.com/page
 ```
 
@@ -87,17 +77,15 @@ python3 scripts/gsc.py inspect --site example.com --url https://example.com/page
 - Do not delete sitemaps.
 - Submit a sitemap only on explicit request, with write scope and `--confirm`.
 - Do not promise indexing submission for ordinary pages. Search Console API provides URL Inspection, not Request Indexing.
-- Do not read or display `config/client_secret.json` or `config/token.json` except for narrowly scoped diagnostics. Never show their contents.
-- Do not delete the original downloaded credentials file without explicit permission.
+- Never display credentials, authorization URLs containing sensitive parameters, access tokens, refresh tokens, or the contents of `config/client_secret.json` and `config/token.json`.
+- Do not delete downloaded credentials without explicit permission.
 
-## Cache and reporting
+## Reporting rules
 
-- Store cache files under `cache/`.
-- Cache `sites` for 24 hours and reports by request parameters.
-- Use `--no-cache` when the user needs fresh data.
-- Display at most 30 rows in the terminal; keep complete TSV or JSON results in the cache.
-- State exact dates when comparing periods and account for Google data finalization delay.
-- Separate API facts, interpretations, and recommendations.
-- Do not treat average position as an exact ranking for a specific user.
-
-Use the related `google-search-console` skill for deeper SEO analysis methodology when it is available.
+- State exact comparison periods.
+- Separate API facts, interpretations, recommendations, and implemented changes.
+- Tie every major recommendation to a query, page, metric, or inspection result.
+- Use relative site evidence instead of invented universal CTR or ranking benchmarks.
+- Treat average position as an aggregate metric, not an exact rank for a specific user.
+- Account for Google data finalization delay.
+- End with the highest-impact next action, or with validation results when implementation is complete.
