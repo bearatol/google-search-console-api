@@ -1,5 +1,9 @@
 import argparse
+import contextlib
 import importlib.util
+import io
+import json
+import stat
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +18,65 @@ SPEC.loader.exec_module(gsc)
 
 
 class GSCTest(unittest.TestCase):
+    def test_validate_client_payload_requires_desktop_app_credentials(self):
+        with self.assertRaises(gsc.GSCError):
+            gsc.validate_client_payload({"web": {"client_id": "id"}})
+
+    def test_install_client_file_validates_and_secures_copy(self):
+        payload = {
+            "installed": {
+                "client_id": "client-id",
+                "client_secret": "client-secret",
+            }
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            source = directory_path / "downloaded.json"
+            destination = directory_path / "config" / "client_secret.json"
+            source.write_text(json.dumps(payload), encoding="utf-8")
+            with mock.patch.object(gsc, "CLIENT_FILE", destination):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    gsc.install_client_file(source)
+            stored = json.loads(destination.read_text(encoding="utf-8"))
+            permissions = stat.S_IMODE(destination.stat().st_mode)
+        self.assertEqual(stored, payload)
+        self.assertEqual(permissions, 0o600)
+
+    def test_setup_parser_supports_import_and_authorization(self):
+        args = gsc.build_parser().parse_args(
+            ["setup", "--client-file", "downloaded.json", "--authorize"]
+        )
+        self.assertEqual(args.client_file, Path("downloaded.json"))
+        self.assertTrue(args.authorize)
+        self.assertEqual(args.scope, "readonly")
+
+    def test_setup_imports_credentials_and_starts_authorization(self):
+        payload = {
+            "installed": {
+                "client_id": "client-id",
+                "client_secret": "client-secret",
+            }
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            source = directory_path / "downloaded.json"
+            destination = directory_path / "config" / "client_secret.json"
+            source.write_text(json.dumps(payload), encoding="utf-8")
+            args = argparse.Namespace(
+                client_file=source,
+                authorize=True,
+                scope="readonly",
+                no_browser=True,
+                timeout=25,
+            )
+            with (
+                mock.patch.object(gsc, "CLIENT_FILE", destination),
+                mock.patch.object(gsc, "oauth_authorize") as authorize,
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                gsc.command_setup(args)
+        authorize.assert_called_once_with("readonly", True, 25)
+
     def test_default_dates_uses_ninety_day_inclusive_window(self):
         start, end = gsc.default_dates("2026-01-01", "2026-03-31")
         self.assertEqual((start, end), ("2026-01-01", "2026-03-31"))

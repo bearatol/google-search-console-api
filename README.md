@@ -1,83 +1,99 @@
 # Google Search Console API Skill
 
-Навык для AI-агентов, который получает реальные данные Google Search Console через API и помогает анализировать поисковую эффективность сайта.
+An AI-agent skill for setting up Google Search Console API access and analyzing real search performance data.
 
-## Возможности
+## AI-first usage
 
-- OAuth 2.0 для Desktop app с read-only scope по умолчанию.
-- Список доступных Search Console properties.
-- Сводка по кликам, показам, CTR и средней позиции.
-- Отчёты по запросам, страницам, датам, устройствам и другим измерениям.
-- Просмотр и отправка sitemap с явным подтверждением.
-- URL Inspection для проверки состояния страницы в индексе Google.
-- Локальный кеш результатов без сторонних Python-зависимостей.
+Install the skill, then ask your AI agent:
 
-## Установка через skills CLI
+```text
+Use $google-search-console-api to set up Search Console access and analyze my website.
+```
+
+The agent will:
+
+1. Check whether Google OAuth credentials and a token are already configured.
+2. Open the relevant Google Cloud pages when browser control is available, or give one precise instruction at a time.
+3. Validate and securely import the downloaded Desktop app credentials file.
+4. Start the OAuth flow in the system browser.
+5. Verify access, list available Search Console properties, and continue with the requested analysis.
+
+Google requires the account owner to complete sign-in, choose or create the Cloud project, and approve the consent screen. The agent handles the surrounding setup and clearly pauses only for these required user actions.
+
+## Installation
 
 ```bash
 npx skills add bearatol/google-search-console-api
 ```
 
-После первой публичной установки репозитория через skills CLI навык автоматически сможет появиться в каталоге [skills.sh](https://skills.sh/).
+Skills installed from the public GitHub repository can be discovered automatically by [skills.sh](https://skills.sh/).
 
-## Ручная установка
+## What it can do
 
-Клонируйте репозиторий в каталог навыков вашего AI-агента или подключите папку как локальный skill:
+- Guide Google Cloud and OAuth 2.0 setup for a Desktop app.
+- List accessible Search Console properties.
+- Summarize clicks, impressions, CTR, and average position.
+- Report by query, page, date, device, and other dimensions.
+- Inspect a URL's Google index status.
+- List sitemaps and submit one after explicit confirmation.
+- Cache results locally without third-party Python dependencies.
 
-```bash
-git clone https://github.com/bearatol/google-search-console-api.git
-cd google-search-console-api
-```
+## Agent-led setup command
 
-Требуется Python 3.10 или новее. Сторонние Python-пакеты не нужны.
-
-## Настройка Google API
-
-1. Включите Google Search Console API в Google Cloud.
-2. Создайте OAuth Client ID типа Desktop app.
-3. Сохраните скачанный файл как `config/client_secret.json`.
-4. Запустите авторизацию:
+Check the current setup:
 
 ```bash
-python3 scripts/gsc.py auth
+python3 scripts/gsc.py setup
 ```
 
-Полная инструкция находится в [references/SETUP.md](references/SETUP.md).
+After downloading the Desktop app OAuth JSON, the agent can securely import it and immediately start authorization:
 
-## Примеры
+```bash
+python3 scripts/gsc.py setup \
+  --client-file /path/to/downloaded-client.json \
+  --authorize
+```
+
+The imported credentials and token are stored with `0600` permissions. The original downloaded file is not deleted automatically.
+
+See [references/SETUP.md](references/SETUP.md) for the complete agent playbook and manual fallback.
+
+## Examples
 
 ```bash
 python3 scripts/gsc.py sites
 python3 scripts/gsc.py summary --site example.com
 python3 scripts/gsc.py performance --site example.com --dimensions query
+python3 scripts/gsc.py performance --site example.com --dimensions page
 python3 scripts/gsc.py inspect --site example.com --url https://example.com/page
 ```
 
-Все команды:
+Show all commands:
 
 ```bash
 python3 scripts/gsc.py --help
 ```
 
-## Безопасность
+Python 3.10 or newer is required. The CLI uses only the Python standard library.
 
-- `config/client_secret.json`, `config/token.json` и `cache/` исключены из Git.
-- Токены сохраняются с правами доступа `0600`.
-- Read-only scope используется по умолчанию.
-- Отправка sitemap требует write scope и флаг `--confirm`.
+## Safety
 
-Перед публикацией всегда проверяйте, что локальные OAuth-файлы не попали в индекс Git.
+- Read-only Search Console access is requested by default.
+- `config/client_secret.json`, `config/token.json`, and `cache/` are excluded from Git.
+- Credentials and tokens are never printed to the terminal.
+- Sitemap submission requires write access and an explicit `--confirm` flag.
+- URL Inspection checks index status; it cannot request indexing for ordinary pages.
 
-## Разработка
+## Development
 
-Запуск тестов:
+Run the tests:
 
 ```bash
 python3 -B -m unittest discover -s tests -v
 ```
 
-Репозиторий автоматически проверяется в GitHub Actions на поддерживаемых версиях Python.
+GitHub Actions runs the test suite on supported Python versions.
 
-## Лицензия
+## License
 
 [MIT](LICENSE)

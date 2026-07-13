@@ -33,6 +33,11 @@ WEBMASTERS_API = "https://www.googleapis.com/webmasters/v3"
 INSPECTION_API = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect"
 TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
+API_LIBRARY_URL = (
+    "https://console.cloud.google.com/apis/library/searchconsole.googleapis.com"
+)
+AUTH_OVERVIEW_URL = "https://console.cloud.google.com/auth/overview"
+OAUTH_CLIENTS_URL = "https://console.cloud.google.com/auth/clients"
 SCOPES = {
     "readonly": "https://www.googleapis.com/auth/webmasters.readonly",
     "write": "https://www.googleapis.com/auth/webmasters",
@@ -68,17 +73,59 @@ def save_secret_json(path: Path, value: dict[str, Any]) -> None:
     os.chmod(path, 0o600)
 
 
-def client_config() -> dict[str, Any]:
-    payload = load_json(CLIENT_FILE)
+def validate_client_payload(payload: dict[str, Any]) -> dict[str, Any]:
     config = payload.get("installed")
     if not isinstance(config, dict):
         raise GSCError(
-            "В config/client_secret.json нет секции installed. "
-            "Создайте OAuth Client ID типа Desktop app."
+            "OAuth JSON has no 'installed' section. "
+            "Create an OAuth Client ID of type Desktop app."
         )
     if not config.get("client_id") or not config.get("client_secret"):
-        raise GSCError("В client_secret.json отсутствуют client_id/client_secret")
+        raise GSCError("OAuth JSON has no client_id or client_secret")
     return config
+
+
+def client_config() -> dict[str, Any]:
+    return validate_client_payload(load_json(CLIENT_FILE))
+
+
+def install_client_file(source: Path) -> None:
+    payload = load_json(source.expanduser())
+    validate_client_payload(payload)
+    save_secret_json(CLIENT_FILE, payload)
+    print(f"OAuth client credentials imported securely: {CLIENT_FILE}")
+    print("The original downloaded file was not deleted.")
+
+
+def command_setup(args: argparse.Namespace) -> None:
+    if args.client_file:
+        install_client_file(args.client_file)
+
+    if not CLIENT_FILE.exists():
+        print("OAuth client credentials: missing")
+        print("\nNext steps:")
+        print(f"1. Enable Google Search Console API: {API_LIBRARY_URL}")
+        print(f"2. Configure Google Auth Platform: {AUTH_OVERVIEW_URL}")
+        print(f"3. Create a Desktop app OAuth client: {OAUTH_CLIENTS_URL}")
+        print("4. Download its JSON file.")
+        print(
+            "5. Run: python3 scripts/gsc.py setup "
+            "--client-file /path/to/file.json --authorize"
+        )
+        return
+
+    client_config()
+    print(f"OAuth client credentials: ready ({CLIENT_FILE})")
+    if args.authorize:
+        oauth_authorize(args.scope, args.no_browser, args.timeout)
+        return
+
+    if TOKEN_FILE.exists():
+        token = load_json(TOKEN_FILE)
+        print(f"OAuth token: {'ready' if token.get('refresh_token') else 'incomplete'}")
+    else:
+        print("OAuth token: missing")
+    print("Next step: python3 scripts/gsc.py auth")
 
 
 def request_json(
@@ -556,6 +603,14 @@ def add_site_argument(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+
+    setup = commands.add_parser("setup", help="Guide and verify OAuth setup")
+    setup.add_argument("--client-file", type=Path)
+    setup.add_argument("--authorize", action="store_true")
+    setup.add_argument("--scope", choices=SCOPES, default="readonly")
+    setup.add_argument("--no-browser", action="store_true")
+    setup.add_argument("--timeout", type=int, default=180)
+    setup.set_defaults(handler=command_setup)
 
     auth = commands.add_parser("auth", help="Настроить OAuth")
     auth.add_argument("--scope", choices=SCOPES, default="readonly")

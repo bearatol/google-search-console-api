@@ -1,4 +1,4 @@
 interface:
   display_name: "Google Search Console API"
-  short_description: "Анализ SEO через Google Search Console API"
-  default_prompt: "Use $google-search-console-api to analyze my site performance in Google Search Console."
+  short_description: "Agent-led Search Console setup and analysis"
+  default_prompt: "Use $google-search-console-api to set up Google Search Console access, guide me through OAuth, and analyze my site's performance."
