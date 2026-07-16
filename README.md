@@ -6,6 +6,8 @@ An autonomous AI-agent skill for retrieving Google Search Console data, diagnosi
 
 [![skills.sh](https://skills.sh/b/bearatol/google-search-console-api)](https://skills.sh/bearatol/google-search-console-api)
 
+[View this skill on MCP Market](https://app.mcpmarket.com/bearatol/skills/google-search-console-api)
+
 ## Ask for an outcome
 
 After installation, the user does not need to name the skill, operate a CLI, or understand the Search Console API. They can make a normal request such as:
