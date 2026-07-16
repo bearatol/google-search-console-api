@@ -1,14 +1,6 @@
 ---
 name: google-search-console-api
-description: >-
-  Autonomously retrieve and analyze Google Search Console data, diagnose
-  organic search performance, and turn findings into website improvements.
-  Use for natural-language requests in any language about a site's Google
-  statistics, search traffic, clicks, impressions, CTR, rankings, indexing,
-  traffic drops, SEO opportunities, or improving a website using real Google
-  data. Also use for Search Console API setup, OAuth, properties, sitemaps, and
-  URL Inspection. The user does not need to mention Search Console, GSC, an
-  API, this skill, or any command explicitly.
+description: "Analyze Google Search Console data, diagnose organic-search performance, and identify actionable SEO improvements for a website."
 ---
 
 # Google Search Console API

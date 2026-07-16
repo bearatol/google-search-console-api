@@ -11,7 +11,8 @@ TEXT_SUFFIXES = {".md", ".py", ".yaml", ".yml"}
 REQUIRED_FILES = {
     "README.md",
     "google-search-console-api/SKILL.md",
-    "google-search-console-api/agents/openai.yaml",
+    "agents/openai.yaml",
+    "google-search-console-api/.gitignore",
     "google-search-console-api/references/ANALYSIS.md",
     "google-search-console-api/references/SETUP.md",
     "google-search-console-api/scripts/gsc.py",
@@ -55,7 +56,7 @@ class PackageTest(unittest.TestCase):
         self.assertTrue(content.startswith("---\n"))
         _, frontmatter, body = content.split("---", 2)
         self.assertRegex(frontmatter, r"(?m)^name: google-search-console-api$")
-        self.assertRegex(frontmatter, r"(?m)^description: >-$")
+        self.assertRegex(frontmatter, r"(?m)^description: .+$")
         self.assertTrue(body.strip())
 
     def test_sensitive_runtime_files_are_not_tracked(self):
