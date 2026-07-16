@@ -10,7 +10,12 @@ from pathlib import Path
 from unittest import mock
 
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "gsc.py"
+MODULE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "google-search-console-api"
+    / "scripts"
+    / "gsc.py"
+)
 SPEC = importlib.util.spec_from_file_location("gsc", MODULE_PATH)
 gsc = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader

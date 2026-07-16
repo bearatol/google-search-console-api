@@ -33,7 +33,7 @@ jobs:
         run: python -B -m unittest discover -s tests -v
 
       - name: Check command-line interface
-        run: python -B scripts/gsc.py --help
+        run: python -B google-search-console-api/scripts/gsc.py --help
 
   install-smoke-test:
     name: Skills CLI installation

@@ -1,6 +1,6 @@
 # Google Search Console API Skill
 
-![bearatol/google-search-console-api banner](assets/readme-banner.png)
+![bearatol/google-search-console-api banner](google-search-console-api/assets/readme-banner.png)
 
 An autonomous AI-agent skill for retrieving Google Search Console data, diagnosing organic search performance, and turning the findings into concrete website improvements.
 
@@ -68,17 +68,17 @@ Credentials and tokens remain local, are excluded from Git, and are never printe
 The bundled dependency-free CLI is an implementation detail used by the agent. It supports setup, authorization, property discovery, performance reports, sitemaps, and URL Inspection:
 
 ```bash
-python3 scripts/gsc.py --help
+python3 google-search-console-api/scripts/gsc.py --help
 ```
 
-See [references/SETUP.md](references/SETUP.md) for authorization handling and [references/ANALYSIS.md](references/ANALYSIS.md) for the analysis and improvement methodology.
+See [references/SETUP.md](google-search-console-api/references/SETUP.md) for authorization handling and [references/ANALYSIS.md](google-search-console-api/references/ANALYSIS.md) for the analysis and improvement methodology.
 
 Python 3.10 or newer is required.
 
 ## Safety
 
 - Read-only Search Console access is requested by default.
-- `config/client_secret.json`, `config/token.json`, and `cache/` are excluded from Git.
+- `google-search-console-api/config/client_secret.json`, `google-search-console-api/config/token.json`, and `google-search-console-api/cache/` are excluded from Git.
 - Credentials and tokens are stored with `0600` permissions.
 - Sitemap submission requires write access and an explicit confirmation flag.
 - URL Inspection checks index status; it cannot request indexing for ordinary pages.
